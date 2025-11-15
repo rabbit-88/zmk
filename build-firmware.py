@@ -4,6 +4,7 @@ import subprocess
 import shutil
 import os
 import sys
+import datetime
 
 # --- Configuration Variables ---
 # NOTE: os.path.expanduser('~') reliably expands the tilde (~) in Python
@@ -13,6 +14,14 @@ FIRMWARE_OUT_DIR = os.path.join(HOME_DIR, "z", "zmk-firmware-builds")
 LOG_FILE = os.path.join(FIRMWARE_OUT_DIR, "zmk-firmware-builds.log")
 
 # --- Helper Functions ---
+
+
+def print_current_time_ms() -> str:
+    now = datetime.datetime.now()
+    time_str = now.strftime("%H:%M:%S")
+    milliseconds = now.microsecond // 1000
+    output = f"{time_str}.{milliseconds:02d}"
+    return output
 
 
 def dprint(*args, file=None, **kwargs):
@@ -37,7 +46,7 @@ def build_and_copy(
     UF2_TARGET = os.path.join(FIRMWARE_OUT_DIR, f"{target}.uf2")
     CONFIG_DIR = os.path.join(HOME_DIR, "z", config)
 
-    dprint(f"\n--- Building {target} ---", file=log_file)
+    dprint(f"\n--- Building {target} --- {print_current_time_ms()}", file=log_file)
 
     command = [
         "west",
@@ -59,7 +68,7 @@ def build_and_copy(
 
     try:
         # We run the command from the ZMK_DIR because 'west' needs the workspace context
-        dprint(f"Executing: {command}", file=log_file)
+        dprint(f"Executing: {build_name}", file=log_file)
         subprocess.run(
             command,
             check=True,
@@ -94,8 +103,35 @@ if __name__ == "__main__":
         with open(LOG_FILE, "w") as f:
             print(f"'west build' output logged to: {LOG_FILE}")
 
+            # build_and_copy(
+            #     config="zmk-corne-a741725193-display",
+            #     build_name="eyelash_right_a",
+            #     board="eyelash_corne_right",
+            #     shield="nice_view",
+            #     target="eyelash_corne_right_a",
+            #     log_file=f,
+            # )
+
+            # build_and_copy(
+            #     config="zmk-corne-a741725193-display",
+            #     build_name="eyelash_left_a",
+            #     board="eyelash_corne_left",
+            #     shield="nice_view",
+            #     target="eyelash_corne_left_a",
+            #     log_file=f,
+            # )
+
+            # build_and_copy(
+            #     config="zmk-corne-a741725193-display",
+            #     build_name="eyelash_reset_left_a",
+            #     board="eyelash_corne_left",
+            #     shield="settings_reset",
+            #     target="eyelash_reset_left_utility_a",
+            #     log_file=f,
+            # )
+
             build_and_copy(
-                config="zmk-corne-a741725193-display",
+                config="zmk-corne-a741725193",
                 build_name="eyelash_right",
                 board="eyelash_corne_right",
                 shield="nice_view",
@@ -104,7 +140,7 @@ if __name__ == "__main__":
             )
 
             build_and_copy(
-                config="zmk-corne-a741725193-display",
+                config="zmk-corne-a741725193",
                 build_name="eyelash_left",
                 board="eyelash_corne_left",
                 shield="nice_view",
@@ -113,14 +149,13 @@ if __name__ == "__main__":
             )
 
             build_and_copy(
-                config="zmk-corne-a741725193-display",
+                config="zmk-corne-a741725193",
                 build_name="eyelash_reset_left",
                 board="eyelash_corne_left",
                 shield="settings_reset",
                 target="eyelash_reset_left_utility",
                 log_file=f,
             )
-
     except Exception as e:
         print(f"FATAL ERROR in main: {e}")
         sys.exit(1)
